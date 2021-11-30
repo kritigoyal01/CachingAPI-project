@@ -1,6 +1,8 @@
 package com.example.cachingapi.cache.strategy.impl;
 
 import com.example.cachingapi.cache.CacheNode;
+import com.example.cachingapi.cache.Notify.Client;
+import com.example.cachingapi.cache.Notify.Notification;
 import com.example.cachingapi.cache.strategy.EvictionStrategy;
 import com.example.cachingapi.cache.ttl.strategy.ExpirationStrategy;
 
@@ -13,7 +15,8 @@ public class LeastRecentlyUsedStrategy implements EvictionStrategy {
     private ExpirationStrategy expirationStrategy;
     Set<Integer> cache;
     Map<Integer, CacheNode> keyToCacheNodeMap;
-
+    private Notification notify1;
+    List<Client> clients;
 
 
     public LeastRecentlyUsedStrategy(int maxCacheSize, ExpirationStrategy expirationStrategy) {
@@ -44,11 +47,14 @@ public class LeastRecentlyUsedStrategy implements EvictionStrategy {
     public void addElement(int element) {
         if (expirationStrategy != null) {
             removeExpiredElements();
+            notify1.sendNotification(clients);
         }
         if (cache.size() == maxCacheSize) {
             int firstElement = cache.iterator().next();
             cache.remove(firstElement);
             keyToCacheNodeMap.remove(firstElement);
+            notify1.sendNotification(clients);
+
         }
         cache.add(element);
         keyToCacheNodeMap.put(element, new CacheNode(System.currentTimeMillis(), System.currentTimeMillis(), element));
